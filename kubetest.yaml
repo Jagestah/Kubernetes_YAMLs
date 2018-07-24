@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubetest
+  replicas: 1
+  selector:
+    matchLabels:
+      app: python
+  template:
+    metadata:
+      labels:
+        app: python
+    spec:
+      containers:
+      - name: configcheckertest
+        image: jagestah/kubetest
+        volumeMounts:
+        - name: secrets
+          mountPath: '/etc/secrets'
+          readOnly: true
+        - name: log-volume
+          mountPath: '/etc/logs'
+      volumes:
+      - name: secrets
+        secret:
+          secretName: ssh-user-pass
+      - name: log-volume
+        hostPath:
+          path: /home/jj/logs
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: logs-pv
+spec:
+  capacity:
+    storage: 100Mb
+  volumeMode: Filesystem
+  
+  storageClassName: local-storage
+  local:
+    path: /tmp/logs
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - kubetest

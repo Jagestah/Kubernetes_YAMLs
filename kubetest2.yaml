@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubetest
+#  replicas: 1
+#  selector:
+#    matchLabels:
+#      app: python
+  template:
+#    metadata:
+#      labels:
+#        app: python
+    spec:
+      containers:
+      - name: configcheckertest
+        image: jagestah/kubetest
+        volumeMounts:
+        - name: secrets
+          mountPath: '/etc/secrets'
+          readOnly: true
+        - name: log-volume
+          mountPath: '/etc/logs'
+      volumes:
+      - name: secrets
+        secret:
+          secretName: ssh-user-pass
+      - name: log-volume
+        hostPath:
+          path: /home/jj/logs
